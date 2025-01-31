@@ -23,7 +23,7 @@ This project retains the **LGPL-2.1 license** as required by the original reposi
 
 ## 👥 Contributors  
 - Chiayi (Aiden) Wu
-- Mia 
+- Mia Zhang
 - Brenda
 
 ## 🚀 Getting Started  
