@@ -15,7 +15,7 @@ This repository contains a Python implementation of the Abowd, Kramarz, and Marg
 
 ## 🔗 Original R-based Implementation  
 The original R implementation was developed by **Stephen Tino (University of Toronto)**.  
-Author: Stephen Tino, PhD Candidate in Economics, University of Toronto, s.tino@mail.utoronto.ca
+Author: Stephen Tino, PhD Candidate in Economics, University of Toronto, s.tino@mail.utoronto.ca         
 GitHub Repository: https://github.com/stephentino/estimate_akm
 
 ## 📄 License  
