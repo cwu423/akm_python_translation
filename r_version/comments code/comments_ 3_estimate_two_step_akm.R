@@ -16,8 +16,12 @@
 # -------------------------------------------------------------------------------------------------------------------- #
 
 
+## This is our comments version of the code No.3.
+
+## Clear Environment: Removes all objects from the current R environment to start fresh
 rm(list = ls())
 
+## Load Required Libraries
 library("data.table")
 library("dplyr")
 library("ggm")
@@ -29,11 +33,14 @@ library("zoo")
 library("broom")
 library("lfe")
 
+## Set Main Directory
 main_directory <- "/Users/Stephen/Dropbox/40. github/estimate_akm"
 
+##Load Helper Functions
 source(paste0(main_directory,"/public_use/code/utils/akm_functions.R"))
 source(paste0(main_directory,"/public_use/code/utils/functions_1.R"))
 
+## Initialize Log File
 log_path <- file(paste0(main_directory,"/public_use/logs/3_two_step_akm.txt"), open = "wt")
 log_open(log_path)
 
@@ -42,7 +49,7 @@ log_open(log_path)
 # load data ---------------------------------------------------------------
 
 main_data <- vload(main_directory, "job_data")
-
+## Select Relevant Columns & Transform Data
 main_data <- main_data[, .(person_id,
                            year,
                            firm_id,
@@ -50,10 +57,11 @@ main_data <- main_data[, .(person_id,
                            age_sq = age^2,
                            log_earnings)]
 
-
+## Display Data Before Cleaning
 cat("\ndata before final data cleaning:\n")
 glimpse(main_data)
 
+## Apply Data Cleaning for AKM Estimation
 main_data <- get_akm_data(main_data) # this function applies some filters to the data for akm estimation
 
 
@@ -63,10 +71,13 @@ main_data <- get_akm_data(main_data) # this function applies some filters to the
 # therefore I exclude the linear term of the quartic polynomial in age in the regression below
 # this follows the literature (e.g. Dostie et al. 2021 and Li et al. 2023)
 
+## Residualize Log Wages for Two-Way Fixed Effects Estimation
 cat("\nbeginning residualization of log wage...")
 
+## Fixed Effects (FE) regression
 est <- felm(log_earnings ~ age_sq | year, data = main_data)
 
+## Stores the residuals from the regression in main_data$resid.
 main_data$resid <- est$residuals
 
 rm(est)
@@ -75,9 +86,10 @@ cat("\n\nfinished residualizing log earnings. Data is ready for akm estimation.\
 
 
 # estimate model and extract results --------------------------------------
-
+## Estimate AKM Model (Two-Way Fixed Effects)
 cat("\n\n\nbeginning estimation of FE model....")
 
+## Runs a two-way fixed effects regression
 est <- felm(resid ~ 1 | person_id + firm_id, data = main_data)
 
 cat("\n\n\n")
@@ -85,6 +97,7 @@ cat("estimation of FE model complete. Results:\n")
 
 summary(est)
 
+## Extract Fixed Effects (FE) Estimates
 cat("\nExtracting FEs....")
 
 fe <- getfe(est)
@@ -103,7 +116,7 @@ cat("FEs saved.")
 
 
 fe <- as.data.table(fe)
-
+## Converts fe (fixed effects) into a data.table for efficient manipulation
 main_data <- get_decomp_data(main_data, fe) # this function merges the FEs into the data with earnings
 
 rm(fe)
@@ -112,10 +125,10 @@ rm(fe)
 results <- var_decomp(y = main_data$log_earnings, 
                       worker_fe = main_data$worker_fe,
                       firm_fe = main_data$firm_fe)
-
+## Saves the variance decomposition results as a CSV file
 fwrite(results, file = paste0(main_directory,"/public_use/results/two_step_akm_variance_decomposition.csv"),
        col.names = TRUE, row.names = FALSE, append = FALSE)
 
 
-
+## Closes the log file.
 log_close()
